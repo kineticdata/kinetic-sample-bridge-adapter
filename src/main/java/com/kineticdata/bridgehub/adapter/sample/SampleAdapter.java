@@ -10,7 +10,9 @@ import com.kineticdata.bridgehub.adapter.BridgeRequest;
 import com.kineticdata.bridgehub.adapter.Count;
 import com.kineticdata.bridgehub.adapter.Record;
 import com.kineticdata.bridgehub.adapter.RecordList;
+import com.kineticdata.commons.v1.config.ConfigurableProperty;
 import com.kineticdata.commons.v1.config.ConfigurablePropertyMap;
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -19,25 +21,48 @@ import java.util.Map;
  * @date   10-26-2021
  */
 public class SampleAdapter implements BridgeAdapter {
+    
+    /** Defines the adapter display name. */
+    public static final String NAME = "Sample";
 
+    /** Adapter version constant. */
+    public static String VERSION;
+    /** Load the properties version from the version.properties file. */
+    static {
+        try {
+            java.util.Properties properties = new java.util.Properties();
+            properties.load(SampleAdapter.class.getResourceAsStream("/" 
+                + SampleAdapter.class.getName()+".version"));
+            VERSION = properties.getProperty("version");
+        } catch (IOException e) {
+            System.out.println("Unable to load " + SampleAdapter.class.getName() 
+                + " version properties.");
+            VERSION = "Unknown";
+        }
+    }
+    
+    private final ConfigurablePropertyMap properties = new ConfigurablePropertyMap(
+
+    );
+    
     @Override
     public ConfigurablePropertyMap getProperties() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return properties;
     }
 
     @Override
-    public void setProperties(Map<String, String> properties) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public void setProperties(Map<String,String> parameters) {
+        properties.setValues(parameters);
     }
 
     @Override
     public String getName() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return NAME;
     }
 
     @Override
     public String getVersion() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return VERSION;
     }
 
     @Override
