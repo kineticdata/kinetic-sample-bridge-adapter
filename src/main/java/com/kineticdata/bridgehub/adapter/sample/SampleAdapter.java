@@ -21,6 +21,9 @@ import java.util.Map;
  * @date   10-26-2021
  */
 public class SampleAdapter implements BridgeAdapter {
+    private String server;
+    private String username;
+    private String password;
     
     /** Defines the adapter display name. */
     public static final String NAME = "Sample";
@@ -41,8 +44,17 @@ public class SampleAdapter implements BridgeAdapter {
         }
     }
     
+    public static class Properties {
+        public static final String SERVER = "Server Url";
+        public static final String USERNAME = "Username";
+        public static final String PASSWORD = "Password";
+    } 
+    
     private final ConfigurablePropertyMap properties = new ConfigurablePropertyMap(
-
+        new ConfigurableProperty(Properties.SERVER).setIsRequired(true),
+        new ConfigurableProperty(Properties.USERNAME).setIsRequired(true),
+        new ConfigurableProperty(Properties.PASSWORD).setIsRequired(true)
+            .setIsSensitive(true)
     );
     
     @Override
@@ -67,7 +79,9 @@ public class SampleAdapter implements BridgeAdapter {
 
     @Override
     public void initialize() throws BridgeError {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        this.server = properties.getValue(Properties.SERVER);
+        this.username = properties.getValue(Properties.USERNAME);
+        this.password = properties.getValue(Properties.PASSWORD);
     }
     
     @Override

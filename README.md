@@ -36,8 +36,8 @@ In step 1 we Name the adapter which will show in the Agent UI dropdown list.  We
     ```Java
         public static String VERSION;
     ```
-1. Assign the VERSION variable the version number defined in the __pom.xml__ file. 
-    * **Addition Info**: The adapter will try to read from __.version__ file that is in __src/main/resources__.  In that file a version number is set during the build execution.  The version is driven of the version number set on the project in the pom.xml file.
+1. Assign the VERSION variable the version number defined in the _pom.xml_ file. 
+    * **Addition Info**: The adapter will try to read from _.version_ file that is in _src/main/resources_.  In that file a version number is set during the build execution.  The version is driven of the version number set on the project in the pom.xml file.
     * Add this after **VERSION** variable declaration: 
     ```Java    
     static {
@@ -75,10 +75,54 @@ In step 1 we Name the adapter which will show in the Agent UI dropdown list.  We
             properties.setValues(parameters);
         }
     ```
-    * Don't forget to leave the __@Override__ annotation.
+    * Don't forget to leave the _@Override_ annotation.
 1. Update **getProperties** method.
     * Replace the placeholder content of the method with: 
     ```Java
         return properties;
     ```
+
+## Step 2
+In step 2 we define a couple of configurable properties and update the initialize method.  Configurable properties are not need for this training but will be implemented for learning purposes.  The initialize method is called when the adapter properties have been set and the adapter is being tested.
+
+### Step 2.1 Add Configurable Properties
+1. Add _Server_, _Username_, and _Password_ configurable properties.
+    * Add between the Version code from step 1.2 and the ConfigurablePropertyMap from step 1.3:
+    ```Java
+        public static class Properties {
+            public static final String SERVER = "Server Url";
+            public static final String USERNAME = "Username";
+            public static final String PASSWORD = "Password";
+        }    
+    ```
+    * **Additional Info**: The above code creates a _Properties_ inner class with a _SERVER_, _USERNAME_, and _PASSWORD_ variables.  
+    * **Additional Info**: One of the most common uses of properties is source system connection information i.e. username / password.
+1. Update the ConfigurablePropertyMap with properties.
+    * Add between the parenthesis: ex _new ConfigurablePropertyMap(_ **Add Code Here** _)_
+    ```Java
+        new ConfigurableProperty(Properties.SERVER).setIsRequired(true),
+        new ConfigurableProperty(Properties.USERNAME).setIsRequired(true),
+        new ConfigurableProperty(Properties.PASSWORD).setIsRequired(true)
+            .setIsSensitive(true)
+    ```
+    * **Additional Info**: Notice that configurable properties can have attributes set.  Above we are making all of the properties required and the PASSWORD property is set to sensitive.  These attributes are respected by the Agent UI.
+1. Add fields to the SampleAdapter class for the properties.
+    * Add class fields (Java standards put class fields at the top of the class):
+    ```Java
+        private String server;
+        private String username;
+        private String password;
+    ```
+### Step 2.2 Implement initialize method
+**Additional Info**: The initialize method is commonly used to assign class field values from the properties.  In addition it is common to try to make a call to the source system as a test that the credentials are good and the system is up.
+**Additional Info**: When step 2 is complete the adapter can be deployed to an agent without throwing an exception.  Since not of the implementation methods have been implemented the adapter will not be functional.
+
+1. Update **initialize** method.
+    * Replace the placeholder content of the method with: 
+    ```Java
+        this.server = properties.getValue(Properties.SERVER);
+        this.username = properties.getValue(Properties.USERNAME);
+        this.password = properties.getValue(Properties.PASSWORD);
+    ```
+    * **Additional Info**: In Java _this_ refers to the class.  Notice how we are assigning the class fields that were defined in step 2.1.  The Plugins section of the Platform UI is where _properties_ values are defined.  The values get save to a local storage or a database that the agent is connected to.
 
