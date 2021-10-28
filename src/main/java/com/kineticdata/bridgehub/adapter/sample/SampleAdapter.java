@@ -129,7 +129,33 @@ public class SampleAdapter implements BridgeAdapter {
            
         JSONArray responseData = fetchData(request);
         
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        // Replace parameter values in query string.
+        String parsedQueryString = parser.parse(request.getQuery(), request.getParameters()); 
+        Map<String, String> parameters = getParameters(parsedQueryString);
+        
+                Record record = new Record();
+        for (int i = 0; i < responseData.size(); i++) {
+            JSONObject jsonObj = (JSONObject)responseData.get(i);
+            
+            // This is a safe way to parse the parameter value.
+            int queryId = NumberUtils.toInt(parameters.get("Id"), -1); // -1 is not a valid id
+            
+            // We control the data so we know it is safe to cast.  In a real scenario
+            // Exception handling would be required.
+            int itemId = ((Long)jsonObj.get("Id")).intValue();
+            
+            // We are retrieving by 'Id.' Different adapters would solve this problem
+            // differently.
+            if (itemId == queryId) {
+                // build record from json object.
+                record = buildRecord(jsonObj, request.getFields());
+               
+                // Found the object we are looking for break the loop.
+                break;
+            } 
+        }
+        
+        return record;
     }
 
     @Override
@@ -204,7 +230,7 @@ public class SampleAdapter implements BridgeAdapter {
     private Map getParameters(String queryString) {
         Map<String, String> parameters = new HashMap<>();
         
-        // Return empyt map if no query was provided from reqeust.
+        // Return empyt map if no query was provided from request.
         if (!queryString.isEmpty()) {
             // Regex allows for & to be in field names.
             String[] queries = queryString.split("&(?=[^&]*?=)");

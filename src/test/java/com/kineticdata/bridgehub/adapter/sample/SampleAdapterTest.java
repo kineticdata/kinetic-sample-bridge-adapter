@@ -39,7 +39,7 @@ public class SampleAdapterTest extends BridgeAdapterTestBase {
         BridgeRequest request = new BridgeRequest();
         BridgeError error = null;
         
-        // Set request proprties.
+        // Set request properties.
         request.setStructure("xxx");
         
         Count count = new Count();
@@ -59,7 +59,7 @@ public class SampleAdapterTest extends BridgeAdapterTestBase {
         BridgeRequest request = new BridgeRequest();
         BridgeError error = null;
         
-        // Set request proprties.
+        // Set request properties.
         request.setStructure("cars");
         
         Count count = new Count();
@@ -89,7 +89,7 @@ public class SampleAdapterTest extends BridgeAdapterTestBase {
             put("Car Id", "2056");
         }};
         
-        // Set request proprties.
+        // Set request properties.
         request.setStructure("cars");
         request.setFields(fields);
         request.setParameters(parameters);
@@ -108,7 +108,7 @@ public class SampleAdapterTest extends BridgeAdapterTestBase {
         // If a matching car is found the record will not be null.
         assertNotNull(record.getRecord());
         
-        // Reset the Id we are searcing for to an invaid id.
+        // Reset the Id we are searching for to an invalid id.
         parameters.replace("Car Id", "xx");
         
         try {
@@ -134,7 +134,7 @@ public class SampleAdapterTest extends BridgeAdapterTestBase {
         
         Map<String, String> parameters = new HashMap<>();
         
-        // Set request proprties.
+        // Set request properties.
         request.setStructure("cars");
         request.setFields(fields);
         request.setParameters(parameters);

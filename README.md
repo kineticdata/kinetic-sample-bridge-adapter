@@ -157,7 +157,7 @@ Unit tests have been added to enable testing of the adapter without the need to 
 The final addition was added to the _bridge-config.yml_ file.  This file is used to the adapter during unit testing and build operations.  The bridge-config.yml allows for user input to be entered into configurable properties and metadata.  This training does not go over metadata yet, but in step 1.3 we added configurable properties.  The properties added were also added to the bridge-config.yml file to allow for unit testing.
 
 ## Step 3
-In this step we will get the adapter to a point were the **count** method will be fully functional.  We will also begin adding code to the **retrieve** and **search** methods to support their operations.
+In Step 3 we will get the adapter to a point were the **count** method will be fully functional.  We will also begin adding code to the **retrieve** and **search** methods to support their operations.
 
 ### Step 3.1 Add and test supported structures
 1. Add structure array.
@@ -205,4 +205,45 @@ In this step we will get the adapter to a point were the **count** method will b
     ```
     * **Additional Info**: The code grabs all of the results from the simulated request call.  In the search method we implement a way to reduce the results for the call.  In reality the source system would likely have some pattern for executing a _search_ that would filter the results before sending a response to the adapter.
 1. Test the added code successfully preforms a count.
-    * Similar to testing the _invalidStructure_ follow the Steps in 3.1, open SampleAdapterTest and run Run Focused Test Method.
+    * Similar to testing the _invalidStructure_ follow the Steps in 3.1, open SampleAdapterTest, click into the body of _test\_count_, and run Run Focused Test Method.
+
+## Step 4
+In Step 4 we will complete and test the retrieve implementation method.
+* **Important**: Step 3 added code to the retrieve method.  Step 4 assumes that the code has been added and is required for the method to function.
+
+### Step 4.1 Get parameters from the request.
+1. Add a **parse** and **getParameters** to get a Map of parameters.
+    * Update **retrieve** method by adding between the **fetchData** method and the _UnsupportedOperationException_:
+    ```Java
+        String parsedQueryString = parser.parse(request.getQuery(), request.getParameters()); 
+        Map<String, String> parameters = getParameters(parsedQueryString);
+    ```
+    * **Additional Info**: The class field variable parser has a parse method that is used to replace the parameter placeholders with the values of the parameters.  A query string with "swapped" values is the output of the parse method.  It is common to structure a query similar to a URI standard query string.  The getParameters method is commonly used to brake the query into a map of parameter name to parameter value.  This enable easier access to the query parameters further down in the code sequence.
+
+### Step 4.2 Complete the retrieve method by locating the desired data by Id.
+1. Add a loop that will take the fetched data and find an element in that data by Id.
+    * Replace the line that throws the _UnsupportedOperationException_ with:
+    ```Java
+        Record record = new Record();
+        for (int i = 0; i < responseData.size(); i++) {
+            JSONObject jsonObj = (JSONObject)responseData.get(i);
+            
+            int queryId = NumberUtils.toInt(parameters.get("Id"), -1); // -1 is not a valid id
+            
+            int itemId = ((Long)jsonObj.get("Id")).intValue();
+            
+            if (itemId == queryId) {
+                record = buildRecord(jsonObj, request.getFields());
+                break;
+            } 
+        }
+        
+        return record;
+    ```
+    * **Additional Info**: In the loop assumptions are being made about the data.  First the adapter assumes that the identifier of an element in the response data uses 'Id'.  Second the adapter also assumes that the parameter name that identifies the value that should be searched for is also 'Id'.  These kinds of assumptions are common in adapters and will very depending on the source system the adapter is integrating with.
+    * **Additional Info**: Extracting the id from the item makes assumptions about the data that would not be safe to do in real scenarios.  First is assumes that the Id exists on the response object.  Second it assumes that data will be an integer which the Simple JSON library converts to a Lond data type.  Writing code in this fashion when the data is not guaranteed to conform to a schema is not recommended.  Since the data is static within the project this is safe.
+
+1. Test the added code successfully preforms a retrieve.
+    * Similar to testing the _invalidStructure_ follow the Steps in 3.1, open SampleAdapterTest, click into the body of _test\_retrieve_, and run Run Focused Test Method.
+    * **Additional Info**: Looking at the _test\_retrieve_ method we can see it is two tests in one.  First it checks for an id that we know exists in the dataset.  Second it checks that an invalid id does not throw and error and also does not return a result.
+
