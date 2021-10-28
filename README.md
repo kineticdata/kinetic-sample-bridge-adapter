@@ -13,6 +13,8 @@ After this step you will have the project local to your machine and open in an I
     * ```cd kinetic-sample-bridge-adapter```
 1. Check out the **Start** branch.
     * ```git checkout start```
+1. Create new branch to work on.
+    * ```git checkout -b feature/training-start```
 1. Open project in IDE 
     * In NetBeans go file > open project > navigate to location where the repo is cloned.
 
@@ -126,3 +128,30 @@ In step 2 we define a couple of configurable properties and update the initializ
     ```
     * **Additional Info**: In Java _this_ refers to the class.  Notice how we are assigning the class fields that were defined in step 2.1.  The Plugins section of the Platform UI is where _properties_ values are defined.  The values get save to a local storage or a database that the agent is connected to.
 
+## Midpoint
+At this point we are going to checkout a new branch before completing the implementation methods count, retrieve, and search.  There are several additions to the project that will be pointed out below.  
+
+### Start by checking out the new branch
+1. Optionally commit the work done in previous steps
+    * ```git add .```
+    * ```git commit -m "starting steps completed"```
+1. Checkout new branch.
+    * ```git checkout midpoint```
+1. Create new branch to work on.
+    * ```git checkout -b feature/training-midpoint```
+
+To start you will notice that the project now includes a new class called _SampleQualificationParser_ and the SampleAdapter class has a new class field
+```Java
+    private SampleQualificationParser parser = new SampleQualificationParser();
+```
+The SampleQualificationParser class extends _QualificationParser_ from the kinetic-agent-adapter project.  The _parser_ class field has a **parse** method that we will use to replace parameter placeholders.
+
+Several helper methods have been added to the SampleAdapter class to assist in common functions that the implementation methods leverage.  Creating helper methods is a good coding practice that reduces code duplication. 
+
+There is a LOGGER class field that is used to log messages.  Two of the helper methods have logging statements.  The **fetchData** helper method logs a message that simulates a Http style call to get data.  To enable the logger to log in NetBeans during logging tests log4j2.xml was added to _src/test/resources_ directory and additional test dependencies were added to the pom.xml file.  A **build with dependencies** of the project maybe required.
+
+There is a json file in _src/main/resources/META-INF/structures_ that is acting as a simulated database for testing.  When the fetchData method is called the method will retrieve a dataset from the json file.
+
+Unit tests have been added to enable testing of the adapter without the need to deploy each time.  The unit tests can be found in the _SampleAdapterTest_ file.  None of the tests will pass initially, but as we continue with the next steps the tests will begin to pass.
+
+The final addition was added to the _bridge-config.yml_ file.  This file is used to the adapter during unit testing and build operations.  The bridge-config.yml allows for user input to be entered into configurable properties and metadata.  This training does not go over metadata yet, but in step 1.3 we added configurable properties.  The properties added were also added to the bridge-config.yml file to allow for unit testing.
