@@ -13,7 +13,19 @@ import com.kineticdata.bridgehub.adapter.RecordList;
 import com.kineticdata.commons.v1.config.ConfigurableProperty;
 import com.kineticdata.commons.v1.config.ConfigurablePropertyMap;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.apache.commons.lang.math.NumberUtils;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONArray;
+import org.json.simple.parser.JSONParser;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -24,13 +36,18 @@ public class SampleAdapter implements BridgeAdapter {
     private String server;
     private String username;
     private String password;
+    private SampleQualificationParser parser = new SampleQualificationParser();
     
-    /** Defines the adapter display name. */
+    /* Defines the adapter display name. */
     public static final String NAME = "Sample";
+    
+    /* Defines the LOGGER */
+    protected static final org.slf4j.Logger LOGGER = 
+        LoggerFactory.getLogger(SampleAdapter.class);
 
-    /** Adapter version constant. */
+    /* Adapter version constant. */
     public static String VERSION;
-    /** Load the properties version from the version.properties file. */
+    /* Load the properties version from the version.properties file. */
     static {
         try {
             java.util.Properties properties = new java.util.Properties();
@@ -99,4 +116,95 @@ public class SampleAdapter implements BridgeAdapter {
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
+    /*----------------------------------------------------------------------------------------------
+     * PRIVATE HELPER METHODS
+     *--------------------------------------------------------------------------------------------*/
+    
+    /* 
+     * Method used to simulate the fetching of data.
+     */
+    private JSONArray fetchData(BridgeRequest request) throws BridgeError {
+        
+        LOGGER.debug(String.format("Simulating a call to %s/api/v1/%s as user %s",
+            this.server, request.getStructure(), this.username));
+        
+        InputStream contentStream = SampleAdapter.class
+            .getResourceAsStream("/META-INF/structures/" + request.getStructure() + ".json");
+        
+        JSONArray mockResponseData;
+        try {
+            JSONParser jsonParser = new JSONParser();
+            mockResponseData = (JSONArray)jsonParser.parse(
+                new InputStreamReader(contentStream, "UTF-8"));
+        } catch (Exception e) {
+            throw new BridgeError("There was a problem reading the form definition"
+                + "In the Kinetic Task Sync adapter", e);            
+        }
+        
+        return mockResponseData;
+    }
+    
+    
+    /*
+     * Build a Record from a json object
+     */
+    private Record buildRecord(JSONObject jsonObj, List<String> fields) {
+        Map<String, Object> record = new HashMap<>();
+        
+        // if no fields were provided then all fields will be returned. 
+        if(fields.isEmpty()){
+            fields.addAll(jsonObj.keySet());
+        }
+        
+        // Loop fields and build record
+        fields.stream().forEach(field -> {
+            Object value = null;
+            
+            if (jsonObj.containsKey(field)) {
+                value = jsonObj.get(field);
+            }
+            
+            record.put(field, value);
+        });
+        
+        return new Record(record);
+    }
+    
+    /*
+     * Take a URL style query string and return a Map of parameters 
+     */
+    private Map getParameters(String queryString) {
+        Map<String, String> parameters = new HashMap<>();
+        
+        // Return empyt map if no query was provided from reqeust.
+        if (!queryString.isEmpty()) {
+            // Regex allows for & to be in field names.
+            String[] queries = queryString.split("&(?=[^&]*?=)");
+            for (String query : queries) {
+                // Split the query on the = to determine the field/value key-pair. 
+                // Anything before the first = is considered to be the field and 
+                // anything after (including more = signs if there are any) is 
+                // considered to be part of the value
+                String[] parameter = query.split("=",2);
+                if (parameter.length == 2) {
+                    // If the parameter is found more than once the values are 
+                    // returned in csv form.
+                    parameters.merge(parameter[0].trim(), parameter[1].trim(), 
+                        (prev, curr) -> {
+                            return String.join(",", prev, curr);
+                        }
+                    );
+                } else if (parameter.length == 1) {
+                    parameters.put(parameter[0].trim(), null);
+                } else {
+                    LOGGER.warn(
+                        String.format("There was an issue parsing the %s parameter", 
+                        parameter[0].trim())
+                    );
+                }
+            }
+        }
+        
+        return parameters;
+    }
 }
