@@ -176,7 +176,7 @@ public class SampleAdapter implements BridgeAdapter {
     private Map getParameters(String queryString) {
         Map<String, String> parameters = new HashMap<>();
         
-        // Return empyt map if no query was provided from reqeust.
+        // Return empyt map if no query was provided from request.
         if (!queryString.isEmpty()) {
             // Regex allows for & to be in field names.
             String[] queries = queryString.split("&(?=[^&]*?=)");
