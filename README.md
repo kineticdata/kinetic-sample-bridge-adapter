@@ -155,3 +155,54 @@ There is a json file in _src/main/resources/META-INF/structures_ that is acting 
 Unit tests have been added to enable testing of the adapter without the need to deploy each time.  The unit tests can be found in the _SampleAdapterTest_ file.  None of the tests will pass initially, but as we continue with the next steps the tests will begin to pass.
 
 The final addition was added to the _bridge-config.yml_ file.  This file is used to the adapter during unit testing and build operations.  The bridge-config.yml allows for user input to be entered into configurable properties and metadata.  This training does not go over metadata yet, but in step 1.3 we added configurable properties.  The properties added were also added to the bridge-config.yml file to allow for unit testing.
+
+## Step 3
+In this step we will get the adapter to a point were the **count** method will be fully functional.  We will also begin adding code to the **retrieve** and **search** methods to support their operations.
+
+### Step 3.1 Add and test supported structures
+1. Add structure array.
+    * For simplicity add this code after the initialize method and before the count method:
+    ```Java
+        private static final ArrayList<String> STRUCTURES = 
+            new ArrayList( Arrays.asList("cars") );
+    ``` 
+1. Add a supported structure test check to each method.
+    * Update count, retrieve, search methods by adding supported structure check above existing code: 
+    ```Java
+        if (!STRUCTURES.contains(request.getStructure())) {
+            throw new BridgeError(String.format("Structure %s is not supported",
+                request.getStructure()));
+        }
+    ```
+    * **Additional Info**: Note that we are throwing our first BridgeError.  If this code is executed in the agent a statement will be added to the log.  Throwing errors halts the execution of the program preventing additional functionality form being executed.
+1. Test that the added code throws a new BridgeError.
+    * Open the SampleAdapterTest file: 
+        * In NetBeans it can be found under the kinetic-sample-bridge-adapter > Test Packages > com.kineticdata.bridgehub.adapter.sample in the Projects Tab.  
+        * If the Project Tab is not displayed select Window > Projects from the menu bar.
+    * Find and test the _test\_invalidStructure_ method.
+        * In NetBeans click the curser inside the method body.  Right click mouse and select **Run Focused Test Method**
+    * There should be _Output_ and _Test Results_ pain. If everything is successful the Test Results pain will display **Tests passed* with in a green banner. 
+
+### Step 3.2 Prepare to fetch simulated data.
+1. Add the fetchData method to count, retrieve, and search methods.
+    * Update the methods to fetch data by adding this between the structures test and the _UnsupportedOperationException_:
+    ```Java
+        JSONArray responseData = fetchData(request);
+    ```
+    * **Additional Info**: The request is passed to fetchData where the structure is used to build the file name to the simulated json database.  Checking that the structure was valid prevents an error in the fetchData method.  It is common to use the structure as part of the data fetch process.
+1. Add values to the bridge-config.yml file
+    * In NetBeans the file can be found under kinetic-sample-bridge-adapter > Other Test Sources > _src/test/resources.
+    * Populate the **Server Url** fields **Username** with any values you like.
+
+### Step 3.3 Complete and test the count implementation method.
+1. Add code to count the results returned from the fetch data simulated request.
+    * Replace the line that throws the _UnsupportedOperationException_ with:
+    ```Java        
+        Count count = new Count();
+        count.setValue(responseData.size());
+        
+        return count;
+    ```
+    * **Additional Info**: The code grabs all of the results from the simulated request call.  In the search method we implement a way to reduce the results for the call.  In reality the source system would likely have some pattern for executing a _search_ that would filter the results before sending a response to the adapter.
+1. Test the added code successfully preforms a count.
+    * Similar to testing the _invalidStructure_ follow the Steps in 3.1, open SampleAdapterTest and run Run Focused Test Method.

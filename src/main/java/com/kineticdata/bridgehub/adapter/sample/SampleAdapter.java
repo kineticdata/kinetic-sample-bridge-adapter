@@ -101,18 +101,46 @@ public class SampleAdapter implements BridgeAdapter {
         this.password = properties.getValue(Properties.PASSWORD);
     }
     
+    /* Supported Structures */
+    private static final ArrayList<String> STRUCTURES = 
+        new ArrayList( Arrays.asList("cars") );
+    
     @Override
     public Count count(BridgeRequest request) throws BridgeError {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        if (!STRUCTURES.contains(request.getStructure())) {
+            throw new BridgeError(String.format("Structure %s is not supported",
+                request.getStructure()));
+        }
+        
+        JSONArray responseData = fetchData(request);
+        
+        Count count = new Count();
+        count.setValue(responseData.size());
+        
+        return count;
     }
 
     @Override
     public Record retrieve(BridgeRequest request) throws BridgeError {
+        if (!STRUCTURES.contains(request.getStructure())) {
+            throw new BridgeError(String.format("Structure %s is not supported",
+                request.getStructure()));
+        }
+           
+        JSONArray responseData = fetchData(request);
+        
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
     public RecordList search(BridgeRequest request) throws BridgeError {
+        if (!STRUCTURES.contains(request.getStructure())) {
+            throw new BridgeError(String.format("Structure %s is not supported",
+                request.getStructure()));
+        }        
+        
+        JSONArray responseData = fetchData(request);
+        
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
     
