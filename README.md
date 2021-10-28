@@ -213,7 +213,7 @@ In Step 4 we will complete and test the retrieve implementation method.
 
 ### Step 4.1 Get parameters from the request.
 1. Add a **parse** and **getParameters** to get a Map of parameters.
-    * Update **retrieve** method by adding between the **fetchData** method and the _UnsupportedOperationException_:
+    * Update search and retrieve methods by adding between the **fetchData** method and the _UnsupportedOperationException_:
     ```Java
         String parsedQueryString = parser.parse(request.getQuery(), request.getParameters()); 
         Map<String, String> parameters = getParameters(parsedQueryString);

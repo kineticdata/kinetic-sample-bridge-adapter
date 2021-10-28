@@ -166,6 +166,10 @@ public class SampleAdapter implements BridgeAdapter {
         }        
         
         JSONArray responseData = fetchData(request);
+                
+        // Replace parameter values in query string.
+        String parsedQueryString = parser.parse(request.getQuery(), request.getParameters()); 
+        Map<String, String> parameters = getParameters(parsedQueryString);
         
         throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
