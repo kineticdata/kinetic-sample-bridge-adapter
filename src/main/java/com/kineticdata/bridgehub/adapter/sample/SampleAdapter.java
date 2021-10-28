@@ -171,7 +171,39 @@ public class SampleAdapter implements BridgeAdapter {
         String parsedQueryString = parser.parse(request.getQuery(), request.getParameters()); 
         Map<String, String> parameters = getParameters(parsedQueryString);
         
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        String searchKey = null;
+        if (parameters.containsKey("search_on")) {
+            // Get the key for comparison
+            searchKey = (String)parameters.get("search_on");
+        }
+                
+        List<String> fields = request.getFields();
+        
+        // If no fields were provided then all fields will be returned. This is 
+        // done here so we return the correct fields from search.
+        if (fields.isEmpty()){
+            fields.addAll(((JSONObject)responseData.get(0)).keySet());
+        }
+                
+        List records = new ArrayList();
+        for (int i = 0; i < responseData.size(); i++) {
+            Record record = new Record();
+            JSONObject jsonObj = (JSONObject)responseData.get(i);
+            
+            if (searchKey == null ||  
+                (jsonObj.containsKey(searchKey) && 
+                parameters.get(searchKey).equals(jsonObj.get(searchKey)))) {
+                
+                // build record from json object.
+                record = buildRecord(jsonObj, fields);
+                
+                // add record to the list.
+                records.add(record);
+                
+            }
+        }
+        
+        return new RecordList(fields, records);
     }
     
     /*----------------------------------------------------------------------------------------------

@@ -168,6 +168,6 @@ public class SampleAdapterTest extends BridgeAdapterTestBase {
         // Check that no bridge error was thrown.
         assertNull(error);
         
-        assertTrue(true);
+        assertTrue(records.getRecords().size() == 172);
     }
 }

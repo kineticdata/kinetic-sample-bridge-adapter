@@ -242,8 +242,63 @@ In Step 4 we will complete and test the retrieve implementation method.
     ```
     * **Additional Info**: In the loop assumptions are being made about the data.  First the adapter assumes that the identifier of an element in the response data uses 'Id'.  Second the adapter also assumes that the parameter name that identifies the value that should be searched for is also 'Id'.  These kinds of assumptions are common in adapters and will very depending on the source system the adapter is integrating with.
     * **Additional Info**: Extracting the id from the item makes assumptions about the data that would not be safe to do in real scenarios.  First is assumes that the Id exists on the response object.  Second it assumes that data will be an integer which the Simple JSON library converts to a Lond data type.  Writing code in this fashion when the data is not guaranteed to conform to a schema is not recommended.  Since the data is static within the project this is safe.
-
 1. Test the added code successfully preforms a retrieve.
     * Similar to testing the _invalidStructure_ follow the Steps in 3.1, open SampleAdapterTest, click into the body of _test\_retrieve_, and run Run Focused Test Method.
     * **Additional Info**: Looking at the _test\_retrieve_ method we can see it is two tests in one.  First it checks for an id that we know exists in the dataset.  Second it checks that an invalid id does not throw and error and also does not return a result.
 
+## Step 5
+In Step 5 we will complete and test the search implementation method.
+* **Important**: Step 3 and Step 4 added code to the search method. Step 4 assumes that the code has been added and is required for the method to function.
+
+### Step 5.1 Add the ability to do a search on a key.
+1. Add codeblock that will grab the search key from the parameters.
+    * Update search method by adding after the parameters are assigned and before the _UnsupportedOperationException_:
+    ```Java
+        String searchKey = null;
+        if (parameters.containsKey("search_on")) {
+            // Get the key for comparison
+            searchKey = (String)parameters.get("search_on");
+        }
+    ```
+    * **Additional Info**: The parameter **search_on** is made up for this example.  It is common for source systems to have a technique to pass a query.  The query is used to filter the response data to the desired set of results.
+### Step 5.2 Get a list of fields.
+1. Add codeblock to build a list of fields.
+    * Update search method by adding after the searchKey is assigned and before the _UnsupportedOperationException_:
+    ```Java
+        List<String> fields = request.getFields();
+        
+        // If no fields were provided then all fields will be returned. This is 
+        // done here so we return the correct fields from search.
+        if (fields.isEmpty()){
+            fields.addAll(((JSONObject)responseData.get(0)).keySet());
+        }
+    ```
+    * **Additional Info**: The list of fields is passed to the **buildRecord** method.  If none are provided all fields are returned.  Providing fields limits the amount of data that is returned.  Some source systems allow for the return data to be reduced to a set of desired properties.  In this case passing the fields along to the source system may increase performance of the source system data fetch.
+### Step 5.3 Complete the search method and support filtering the set.
+1. Loop the results while filtering and build records.
+    * Replace the line that throws the _UnsupportedOperationException_ with:
+    ```Java         
+        List records = new ArrayList();
+        for (int i = 0; i < responseData.size(); i++) {
+            Record record = new Record();
+            JSONObject jsonObj = (JSONObject)responseData.get(i);
+            
+            if (searchKey == null ||  
+                (jsonObj.containsKey(searchKey) && 
+                parameters.get(searchKey).equals(jsonObj.get(searchKey)))) {
+                
+                // build record from json object.
+                record = buildRecord(jsonObj, fields);
+                
+                // add record to the list.
+                records.add(record);
+                
+            }
+        }
+        
+        return new RecordList(fields, records);
+    ```
+    * **Additional Info**: In the loop there is a conditional that will build a record if no searchKey is provided or will only build a record if the searchKey value and the item value match.  It is uncommon to do this behavior in the adapter.  To reduce a set in the adapter deterministically requires that all results that could possibly match are held in memory.  This is inefficient and should only be done if absolutely necessary.  The data for this example is static so it is acceptable here.
+1. Test the added code successfully preforms a search.
+    * Similar to testing the _invalidStructure_ follow the Steps in 3.1, open SampleAdapterTest, click into the body of _test\_search_, and run Run Focused Test Method.
+    * **Additional Info**: Looking at the _test\_search_ method we can see it is two tests in one.  First it that the full dataset is returned when no **search_on** parameter is provided.  Second it filters the dataset down to the items that have a value for the search_on parameter key that matches the search_on parameter value.
