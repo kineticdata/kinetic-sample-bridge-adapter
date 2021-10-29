@@ -20,7 +20,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.commons.lang.math.NumberUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONArray;
@@ -133,7 +132,11 @@ public class SampleAdapter implements BridgeAdapter {
         String parsedQueryString = parser.parse(request.getQuery(), request.getParameters()); 
         Map<String, String> parameters = getParameters(parsedQueryString);
         
-                Record record = new Record();
+        List<String> fields = request.getFields() == null ? 
+            new ArrayList() : 
+            request.getFields();
+        
+        Record record = new Record();
         for (int i = 0; i < responseData.size(); i++) {
             JSONObject jsonObj = (JSONObject)responseData.get(i);
             
@@ -148,7 +151,7 @@ public class SampleAdapter implements BridgeAdapter {
             // differently.
             if (itemId == queryId) {
                 // build record from json object.
-                record = buildRecord(jsonObj, request.getFields());
+                record = buildRecord(jsonObj, fields);
                
                 // Found the object we are looking for break the loop.
                 break;
@@ -177,12 +180,14 @@ public class SampleAdapter implements BridgeAdapter {
             searchKey = (String)parameters.get("search_on");
         }
                 
-        List<String> fields = request.getFields();
+        List<String> fields = request.getFields() == null ? 
+            new ArrayList() : 
+            request.getFields();
         
         // If no fields were provided then all fields will be returned. This is 
         // done here so we return the correct fields from search.
         if (fields.isEmpty()){
-            fields.addAll(((JSONObject)responseData.get(0)).keySet());
+            fields = new ArrayList<>(((JSONObject)responseData.get(0)).keySet());
         }
                 
         List records = new ArrayList();
@@ -243,7 +248,7 @@ public class SampleAdapter implements BridgeAdapter {
         
         // if no fields were provided then all fields will be returned. 
         if(fields.isEmpty()){
-            fields.addAll(jsonObj.keySet());
+            fields = new ArrayList<>(jsonObj.keySet());
         }
         
         // Loop fields and build record

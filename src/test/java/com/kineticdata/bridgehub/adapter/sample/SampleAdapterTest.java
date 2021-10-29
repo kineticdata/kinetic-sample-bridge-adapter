@@ -131,7 +131,6 @@ public class SampleAdapterTest extends BridgeAdapterTestBase {
         
         // Make a list of fields
         List<String> fields = Arrays.asList("Make", "Model", "Year", "Id");
-        
         Map<String, String> parameters = new HashMap<>();
         
         // Set request properties.
@@ -169,5 +168,40 @@ public class SampleAdapterTest extends BridgeAdapterTestBase {
         assertNull(error);
         
         assertTrue(records.getRecords().size() == 172);
+    }
+    
+    @Test
+    public void test_fieldsNull() {
+        BridgeRequest request = new BridgeRequest();
+        BridgeError error = null;
+        
+        // Make a list of fields
+        Map<String, String> parameters = new HashMap<>();
+        
+        // Set request properties.
+        request.setStructure("cars");
+        request.setFields(null);
+        request.setParameters(parameters);
+        request.setQuery("");
+        
+        // Check search does not throw an error
+        try {
+            getAdapter().search(request);
+        } catch (BridgeError e) {
+            error = e;
+        }
+
+        // Check that no bridge error was thrown.
+        assertNull(error);
+        
+        // Check search does not throw an error
+        try {
+            getAdapter().retrieve(request);
+        } catch (BridgeError e) {
+            error = e;
+        }
+        
+        // Check that no bridge error was thrown.
+        assertNull(error);   
     }
 }
