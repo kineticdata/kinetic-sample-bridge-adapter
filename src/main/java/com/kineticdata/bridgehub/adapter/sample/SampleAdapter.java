@@ -133,7 +133,11 @@ public class SampleAdapter implements BridgeAdapter {
         String parsedQueryString = parser.parse(request.getQuery(), request.getParameters()); 
         Map<String, String> parameters = getParameters(parsedQueryString);
         
-                Record record = new Record();
+        List<String> fields = request.getFields() == null ? 
+            new ArrayList() : 
+            request.getFields();
+        
+        Record record = new Record();
         for (int i = 0; i < responseData.size(); i++) {
             JSONObject jsonObj = (JSONObject)responseData.get(i);
             
@@ -148,7 +152,7 @@ public class SampleAdapter implements BridgeAdapter {
             // differently.
             if (itemId == queryId) {
                 // build record from json object.
-                record = buildRecord(jsonObj, request.getFields());
+                record = buildRecord(jsonObj, fields);
                
                 // Found the object we are looking for break the loop.
                 break;
@@ -211,7 +215,7 @@ public class SampleAdapter implements BridgeAdapter {
         
         // if no fields were provided then all fields will be returned. 
         if(fields.isEmpty()){
-            fields.addAll(jsonObj.keySet());
+            fields = new ArrayList<>(jsonObj.keySet());
         }
         
         // Loop fields and build record

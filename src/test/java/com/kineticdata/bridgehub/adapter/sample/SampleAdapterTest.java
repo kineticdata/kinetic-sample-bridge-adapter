@@ -170,4 +170,39 @@ public class SampleAdapterTest extends BridgeAdapterTestBase {
         
         assertTrue(true);
     }
+    
+    @Test
+    public void test_fieldsNull() {
+        BridgeRequest request = new BridgeRequest();
+        BridgeError error = null;
+
+        // Make a list of fields
+        Map<String, String> parameters = new HashMap<>();
+
+        // Set request properties.
+        request.setStructure("cars");
+        request.setFields(null);
+        request.setParameters(parameters);
+        request.setQuery("");
+
+        // Check search does not throw an error
+        try {
+            getAdapter().search(request);
+        } catch (BridgeError e) {
+            error = e;
+        }
+
+        // Check that no bridge error was thrown.
+        assertNull(error);
+
+        // Check search does not throw an error
+        try {
+            getAdapter().retrieve(request);
+        } catch (BridgeError e) {
+            error = e;
+        }
+
+        // Check that no bridge error was thrown.
+        assertNull(error);   
+    }
 }
